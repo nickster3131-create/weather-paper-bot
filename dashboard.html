@@ -1,0 +1,304 @@
+<title>Bracket Watch</title>
+<style>
+:root {
+  --bg: #f4f6f5;
+  --surface: #ffffff;
+  --surface-sunk: #eceff0;
+  --border: #d7dcdc;
+  --text-primary: #10161a;
+  --text-secondary: #57666c;
+  --text-muted: #8c9aa0;
+  --accent: #0f8b8d;
+  --accent-soft: #e3f3f2;
+  --good: #1a8a4a;
+  --good-soft: #e5f5ea;
+  --bad: #c23b3b;
+  --bad-soft: #fbeaea;
+  --pending: #b8860b;
+  --pending-soft: #faf3e0;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+  --sans: -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1116;
+    --surface: #131a21;
+    --surface-sunk: #0f151a;
+    --border: #263039;
+    --text-primary: #e9eef1;
+    --text-secondary: #93a3ac;
+    --text-muted: #5c6b73;
+    --accent: #4fd1c9;
+    --accent-soft: #143332;
+    --good: #4fbf7a;
+    --good-soft: #142a1d;
+    --bad: #e6716f;
+    --bad-soft: #2c1717;
+    --pending: #e0b84a;
+    --pending-soft: #2c2312;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1116;
+  --surface: #131a21;
+  --surface-sunk: #0f151a;
+  --border: #263039;
+  --text-primary: #e9eef1;
+  --text-secondary: #93a3ac;
+  --text-muted: #5c6b73;
+  --accent: #4fd1c9;
+  --accent-soft: #143332;
+  --good: #4fbf7a;
+  --good-soft: #142a1d;
+  --bad: #e6716f;
+  --bad-soft: #2c1717;
+  --pending: #e0b84a;
+  --pending-soft: #2c2312;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  padding: 1.5rem 0;
+  max-width: 760px;
+  margin: 0 auto;
+}
+h1, h2, h3 { text-wrap: balance; font-weight: 600; margin: 0; }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 0.5px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.header h1 { font-size: 22px; }
+.header .updated {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.hero-cell {
+  background: var(--surface);
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hero-cell .label { font-size: 12px; color: var(--text-secondary); }
+.hero-cell .value {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.hero-cell .sub { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+.value.pos { color: var(--good); }
+.value.neg { color: var(--bad); }
+.value.flat { color: var(--text-primary); }
+
+.section {
+  margin-bottom: 1.75rem;
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.6rem;
+}
+.section-head h2 { font-size: 15px; }
+.section-head .count { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+
+.cities {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+.city-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius, 8px);
+  padding: 0.85rem 1rem;
+}
+.city-card .name { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.city-card .local-time {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.pill.pending { background: var(--pending-soft); color: var(--pending); }
+.pill.open { background: var(--accent-soft); color: var(--accent); }
+.pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.empty-state {
+  background: var(--surface-sunk);
+  border: 0.5px dashed var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.empty-state .big { font-size: 28px; margin-bottom: 4px; font-family: var(--mono); color: var(--text-muted); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding: 8px 12px;
+  background: var(--surface-sunk);
+  border-bottom: 0.5px solid var(--border);
+}
+td {
+  padding: 8px 12px;
+  border-bottom: 0.5px solid var(--border);
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+tr:last-child td { border-bottom: none; }
+.table-wrap { overflow-x: auto; }
+
+.footnote {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  border-top: 0.5px solid var(--border);
+  padding-top: 1rem;
+}
+.footnote code {
+  font-family: var(--mono);
+  background: var(--surface-sunk);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+</style>
+
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">
+  Paper-trading dashboard tracking a $500 imaginary bankroll for a weather-bracket mispricing strategy across four cities.
+</h2>
+
+<div class="header">
+  <div>
+    <div class="eyebrow">Paper trading &middot; not real money</div>
+    <h1>Bracket Watch</h1>
+  </div>
+  <div class="updated" id="updated-at">Snapshot -- no runs yet</div>
+</div>
+
+<div class="hero">
+  <div class="hero-cell">
+    <div class="label">Bankroll</div>
+    <div class="value flat" id="bankroll-value">$500.00</div>
+    <div class="sub" id="bankroll-sub">started at $500.00 &middot; 0.0%</div>
+  </div>
+  <div class="hero-cell">
+    <div class="label">Open positions</div>
+    <div class="value flat" id="open-count">0</div>
+    <div class="sub" id="open-sub">$0.00 committed</div>
+  </div>
+  <div class="hero-cell">
+    <div class="label">Resolved</div>
+    <div class="value flat" id="resolved-count">0</div>
+    <div class="sub" id="resolved-sub">0 wins &middot; 0 losses</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Cities</h2>
+    <span class="count">13 tracked</span>
+  </div>
+  <div class="cities" id="cities-grid">
+    <div class="city-card"><div class="name">Amsterdam</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Madrid</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Paris</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">London</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Miami</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">New York City</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Toronto</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Houston</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Los Angeles</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Seoul</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Tokyo</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Hong Kong</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Shanghai</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head">
+    <h2>Fills</h2>
+    <span class="count" id="fills-count">0</span>
+  </div>
+  <div class="empty-state" id="fills-empty">
+    <div class="big">&mdash;</div>
+    No paper fills yet. Every scanned city has been outside its post-5pm-local signal window on every hourly check so far -- once a bracket clears that window with real mispricing, it'll show up here with quoted price, actual fill price after order-book depth, and slippage.
+  </div>
+  <div class="table-wrap" style="display:none;" id="fills-table-wrap">
+    <table id="fills-table">
+      <thead>
+        <tr>
+          <th>Time</th><th>City</th><th>Bracket</th><th>Side</th>
+          <th>Quoted</th><th>Fill</th><th>Slip</th><th>Size</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="fills-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footnote">
+  Strategy: buy the "No" side of a temperature bracket once it's provably dead but still priced under 97&cent;, past each city's local signal window. Fills are simulated against real order-book depth, not the quoted top price -- thin books mean worse average fills or a skipped trade entirely. Data regenerated from <code>paper_trades.jsonl</code> and <code>paper_bankroll.json</code> each hourly scan. No real orders are ever placed.
+</div>
+
+<script>
+window.DASHBOARD_DATA = window.DASHBOARD_DATA || null;
+</script>
