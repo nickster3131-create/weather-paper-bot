@@ -230,59 +230,55 @@ tr:last-child td { border-bottom: none; }
     <div class="eyebrow">Paper trading &middot; not real money</div>
     <h1>Bracket Watch</h1>
   </div>
-  <div class="updated" id="updated-at">Snapshot -- no runs yet</div>
+  <div class="updated" id="updated-at">Snapshot -- 2026-08-18 22:09 UTC</div>
 </div>
 
 <div class="hero">
   <div class="hero-cell">
     <div class="label">Bankroll</div>
     <div class="value flat" id="bankroll-value">$500.00</div>
-    <div class="sub" id="bankroll-sub">started at $500.00 &middot; 0.0%</div>
+    <div class="sub" id="bankroll-sub">started at $500.00 -- +0.0%</div>
   </div>
   <div class="hero-cell">
     <div class="label">Open positions</div>
-    <div class="value flat" id="open-count">0</div>
-    <div class="sub" id="open-sub">$0.00 committed</div>
+    <div class="value flat" id="open-count">10</div>
+    <div class="sub" id="open-sub">$50.00 committed</div>
   </div>
   <div class="hero-cell">
     <div class="label">Resolved</div>
     <div class="value flat" id="resolved-count">0</div>
-    <div class="sub" id="resolved-sub">0 wins &middot; 0 losses</div>
+    <div class="sub" id="resolved-sub">0 wins -- 0 losses</div>
   </div>
 </div>
 
 <div class="section">
   <div class="section-head">
     <h2>Cities</h2>
-    <span class="count">13 tracked</span>
+    <span class="count" id="cities-count">10 tracked</span>
   </div>
   <div class="cities" id="cities-grid">
-    <div class="city-card"><div class="name">Amsterdam</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">Madrid</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">Paris</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">London</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">Miami</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">New York City</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">Toronto</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">Houston</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">Los Angeles</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">Seoul</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">Tokyo</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">Hong Kong</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
-    <div class="city-card"><div class="name">Shanghai</div><div class="local-time">--:--</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+<!-- CITY_CARDS:START -->
+    <div class="city-card"><div class="name">Munich</div><div class="local-time">0:00</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Singapore</div><div class="local-time">6:00</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Milan</div><div class="local-time">0:00</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Madrid</div><div class="local-time">0:00</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Istanbul</div><div class="local-time">1:00</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Karachi</div><div class="local-time">3:00</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Ankara</div><div class="local-time">1:00</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Amsterdam</div><div class="local-time">0:00</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Paris</div><div class="local-time">0:00</div><span class="pill pending"><span class="pill-dot"></span>before window</span></div>
+    <div class="city-card"><div class="name">Toronto</div><div class="local-time">18:00</div><span class="pill open"><span class="pill-dot"></span>past window</span></div>
+<!-- CITY_CARDS:END -->
   </div>
 </div>
 
 <div class="section">
   <div class="section-head">
     <h2>Fills</h2>
-    <span class="count" id="fills-count">0</span>
+    <span class="count" id="fills-count">10</span>
   </div>
-  <div class="empty-state" id="fills-empty">
-    <div class="big">&mdash;</div>
-    No paper fills yet. Every scanned city has been outside its post-5pm-local signal window on every hourly check so far -- once a bracket clears that window with real mispricing, it'll show up here with quoted price, actual fill price after order-book depth, and slippage.
-  </div>
-  <div class="table-wrap" style="display:none;" id="fills-table-wrap">
+  <!-- FILLS_CONTENT:START -->
+  <div class="table-wrap" id="fills-table-wrap">
     <table id="fills-table">
       <thead>
         <tr>
@@ -290,9 +286,21 @@ tr:last-child td { border-bottom: none; }
           <th>Quoted</th><th>Fill</th><th>Slip</th><th>Size</th><th>Status</th>
         </tr>
       </thead>
-      <tbody id="fills-tbody"></tbody>
+      <tbody id="fills-tbody">
+        <tr><td>08-18 15:45 UTC</td><td>Amsterdam</td><td>22c</td><td>No</td><td>0.960</td><td>0.960</td><td>+0.0004</td><td>$5.00</td><td class="flat">PENDING</td></tr>
+        <tr><td>08-18 15:45 UTC</td><td>Amsterdam</td><td>21c</td><td>Yes</td><td>0.950</td><td>0.950</td><td>+0.0000</td><td>$5.00</td><td class="flat">PENDING</td></tr>
+        <tr><td>08-18 15:45 UTC</td><td>Munich</td><td>21c</td><td>No</td><td>0.970</td><td>0.970</td><td>+0.0000</td><td>$5.00</td><td class="flat">PENDING</td></tr>
+        <tr><td>08-18 15:45 UTC</td><td>Munich</td><td>20c</td><td>Yes</td><td>0.970</td><td>0.970</td><td>+0.0000</td><td>$5.00</td><td class="flat">PENDING</td></tr>
+        <tr><td>08-18 14:43 UTC</td><td>Istanbul</td><td>33c</td><td>No</td><td>0.934</td><td>0.935</td><td>+0.0010</td><td>$5.00</td><td class="flat">PENDING</td></tr>
+        <tr><td>08-18 14:43 UTC</td><td>Istanbul</td><td>32c</td><td>Yes</td><td>0.938</td><td>0.935</td><td>-0.0029</td><td>$5.00</td><td class="flat">PENDING</td></tr>
+        <tr><td>08-18 05:14 UTC</td><td>Los Angeles</td><td>82-83f</td><td>No</td><td>0.970</td><td>0.970</td><td>+0.0000</td><td>$5.00</td><td class="flat">PENDING</td></tr>
+        <tr><td>08-18 05:14 UTC</td><td>Los Angeles</td><td>80-81f</td><td>No</td><td>0.820</td><td>0.820</td><td>+0.0000</td><td>$5.00</td><td class="flat">PENDING</td></tr>
+        <tr><td>08-18 05:14 UTC</td><td>Los Angeles</td><td>78-79f</td><td>Yes</td><td>0.590</td><td>0.590</td><td>+0.0000</td><td>$5.00</td><td class="flat">PENDING</td></tr>
+        <tr><td>08-18 05:14 UTC</td><td>Los Angeles</td><td>76-77f</td><td>No</td><td>0.820</td><td>0.820</td><td>+0.0000</td><td>$5.00</td><td class="flat">PENDING</td></tr>
+      </tbody>
     </table>
   </div>
+<!-- FILLS_CONTENT:END -->
 </div>
 
 <div class="footnote">
