@@ -258,6 +258,20 @@ def scan_city(city):
     return signals
 
 
+def load_existing_positions():
+    """Set of (conditionId, outcome) already paper-filled, so we don't
+    re-buy the same bracket every hour it stays in the signal window."""
+    positions = set()
+    try:
+        with open(PAPER_TRADE_LOG) as f:
+            for line in f:
+                rec = json.loads(line)
+                positions.add((rec.get("conditionId"), rec.get("outcome")))
+    except FileNotFoundError:
+        pass
+    return positions
+
+
 def load_bankroll():
     try:
         with open(BANKROLL_FILE) as f:
@@ -346,10 +360,23 @@ def main():
     if not all_signals:
         return
 
+    existing = load_existing_positions()
+    new_signals = []
+    for sig in all_signals:
+        key = (sig["market"].get("conditionId"), sig["outcome"])
+        if key in existing:
+            print(f"  [SKIP -- already hold this position] {sig['city']}: {sig['market']['title'][:45]} {sig['outcome']}")
+        else:
+            new_signals.append(sig)
+
+    if not new_signals:
+        print("\nAll candidates already have open paper positions from a prior run -- nothing new to fill.")
+        return
+
     bankroll = load_bankroll()
     print(f"\nBankroll before this run: ${bankroll['cash']:.2f} cash, "
           f"${bankroll['committed']:.2f} committed to open paper positions.")
-    for sig in all_signals:
+    for sig in new_signals:
         paper_fill(sig, bankroll)
     save_bankroll(bankroll)
 
