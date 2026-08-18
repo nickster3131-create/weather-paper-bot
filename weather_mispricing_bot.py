@@ -54,20 +54,19 @@ OPEN_METEO = "https://api.open-meteo.com/v1/forecast"
 # the market's own page before adding it here -- this file's job is just
 # to help you not trade before the day's high is realistically locked in.
 CITY_COORDS = {
-    "Shanghai": (31.23, 121.47, "Asia/Shanghai"),
-    "London": (51.51, -0.13, "Europe/London"),
-    "New York City": (40.71, -74.01, "America/New_York"),
-    "Miami": (25.76, -80.19, "America/New_York"),
-    # added -- cities the verified profitable weather wallets actually trade
-    "Hong Kong": (22.30, 114.17, "Asia/Hong_Kong"),
-    "Paris": (48.85, 2.35, "Europe/Paris"),
+    # Aligned to Weatherstappen's actual traded cities -- the verified
+    # wallet with the highest Sharpe (12.13) of everything we checked.
+    # Ranked here roughly by their per-city profit contribution.
+    "Munich": (48.14, 11.58, "Europe/Berlin"),
+    "Singapore": (1.35, 103.82, "Asia/Singapore"),
+    "Milan": (45.46, 9.19, "Europe/Rome"),
     "Madrid": (40.42, -3.70, "Europe/Madrid"),
+    "Istanbul": (41.01, 28.98, "Europe/Istanbul"),
+    "Karachi": (24.86, 67.01, "Asia/Karachi"),
+    "Ankara": (39.93, 32.86, "Europe/Istanbul"),
     "Amsterdam": (52.37, 4.90, "Europe/Amsterdam"),
-    "Los Angeles": (34.05, -118.24, "America/Los_Angeles"),
-    "Houston": (29.76, -95.37, "America/Chicago"),
+    "Paris": (48.85, 2.35, "Europe/Paris"),
     "Toronto": (43.65, -79.38, "America/Toronto"),
-    "Seoul": (37.57, 126.98, "Asia/Seoul"),
-    "Tokyo": (35.68, 139.65, "Asia/Tokyo"),
 }
 
 # Only treat a bracket as a real "dead outcome" signal once it's at least
