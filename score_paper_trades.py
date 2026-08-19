@@ -16,12 +16,19 @@ STARTING_BANKROLL = 500.00
 
 
 def get_market_resolution(condition_id):
-    req = urllib.request.Request(
-        f"{GAMMA}/markets?condition_ids={condition_id}",
-        headers={"User-Agent": "paper-trade-scorer/1.0"},
-    )
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        data = json.loads(resp.read())
+    # Gamma's default /markets query silently omits closed markets, so a
+    # resolved market looks identical to "not found" unless closed=true is
+    # passed explicitly. Try the plain query first (covers still-open
+    # markets), then retry with closed=true if that comes back empty.
+    for params in (f"condition_ids={condition_id}", f"condition_ids={condition_id}&closed=true"):
+        req = urllib.request.Request(
+            f"{GAMMA}/markets?{params}",
+            headers={"User-Agent": "paper-trade-scorer/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+        if data:
+            break
     if not data:
         return None
     m = data[0]
