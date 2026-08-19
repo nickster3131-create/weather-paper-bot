@@ -17,7 +17,7 @@ import re
 import sys
 from datetime import datetime, timezone
 
-from weather_mispricing_bot import CITY_COORDS, local_hour, past_signal_window
+from weather_mispricing_bot import CITY_COORDS, local_hour, past_signal_window, http_get, GAMMA, CLOB
 from score_paper_trades import get_market_resolution, STARTING_BANKROLL
 
 DASHBOARD_FILE = "dashboard.html"
@@ -39,6 +39,27 @@ def load_bankroll():
             return json.load(f)
     except FileNotFoundError:
         return {"cash": STARTING_BANKROLL, "committed": 0.0}
+
+
+def get_live_price(condition_id, outcome):
+    """Current best bid for a still-open position -- what you'd get selling
+    right now. None if the market/outcome can't be found or has no bids."""
+    try:
+        markets = http_get(f"{GAMMA}/markets", {"condition_ids": condition_id})
+        if not markets:
+            return None
+        m = markets[0]
+        outcomes = json.loads(m["outcomes"])
+        tokens = json.loads(m["clobTokenIds"])
+        idx = outcomes.index(outcome)
+        token = tokens[idx]
+        book = http_get(f"{CLOB}/book", {"token_id": token})
+        bids = book.get("bids", [])
+        if not bids:
+            return None
+        return max(float(b["price"]) for b in bids)
+    except Exception:
+        return None
 
 
 def score_trades(trades):
@@ -73,7 +94,8 @@ def score_trades(trades):
                 status = "LOSS"
         else:
             pending_usd += t["size_usd"]
-        rows.append((t, status))
+        live_price = get_live_price(t["conditionId"], t["outcome"]) if status == "PENDING" else None
+        rows.append((t, status, live_price))
     return rows, resolved, wins, losses, pending_usd, realized_pnl, resolved_stake_usd
 
 
@@ -115,14 +137,27 @@ def render_fills_content(rows):
 
     rows_sorted = sorted(rows, key=lambda r: r[0]["timestamp"], reverse=True)
     trs = []
-    for t, status in rows_sorted:
+    for t, status, live_price in rows_sorted:
         ts = datetime.fromisoformat(t["timestamp"]).strftime("%m-%d %H:%M UTC")
         status_class = {"WIN": "pos", "LOSS": "neg", "PENDING": "flat"}[status]
+        if status == "PENDING":
+            if live_price is not None:
+                delta = live_price - t["fill_price"]
+                delta_class = "pos" if delta > 0 else ("neg" if delta < 0 else "flat")
+                now_cell = f'<td>{live_price:.3f}</td><td class="{delta_class}">{delta:+.3f}</td>'
+            else:
+                now_cell = '<td>&mdash;</td><td>&mdash;</td>'
+        else:
+            # resolved -- "now" is the final settled price (0 or 1), delta vs fill is the realized move
+            final = 1.0 if status == "WIN" else 0.0
+            delta = final - t["fill_price"]
+            delta_class = "pos" if delta > 0 else ("neg" if delta < 0 else "flat")
+            now_cell = f'<td>{final:.3f}</td><td class="{delta_class}">{delta:+.3f}</td>'
         trs.append(
             "        <tr>"
             f"<td>{ts}</td><td>{html.escape(t['city'])}</td><td>{html.escape(bracket_label(t))}</td>"
-            f"<td>{html.escape(t['outcome'])}</td><td>{t['quoted_price']:.3f}</td>"
-            f"<td>{t['fill_price']:.3f}</td><td>{t['slippage']:+.4f}</td>"
+            f"<td>{html.escape(t['outcome'])}</td><td>{t['fill_price']:.3f}</td>"
+            f"{now_cell}"
             f"<td>${t['size_usd']:.2f}</td><td class=\"{status_class}\">{status}</td></tr>"
         )
     table_rows = "\n".join(trs)
@@ -132,7 +167,7 @@ def render_fills_content(rows):
         "      <thead>\n"
         "        <tr>\n"
         "          <th>Time</th><th>City</th><th>Bracket</th><th>Side</th>\n"
-        "          <th>Quoted</th><th>Fill</th><th>Slip</th><th>Size</th><th>Status</th>\n"
+        "          <th>Fill</th><th>Now</th><th>Since fill</th><th>Size</th><th>Status</th>\n"
         "        </tr>\n"
         "      </thead>\n"
         f'      <tbody id="fills-tbody">\n{table_rows}\n      </tbody>\n'
@@ -185,8 +220,10 @@ def main():
         lambda m: f"{m.group(1)}${total_value:,.2f}{m.group(2)}",
         src, count=1,
     )
-    src = src.replace(
-        'class="value flat" id="bankroll-value"', f'class="value {value_class}" id="bankroll-value"'
+    src = re.sub(
+        r'class="value \w+" id="bankroll-value"',
+        f'class="value {value_class}" id="bankroll-value"',
+        src, count=1,
     )
     src = replace_id_text(src, "bankroll-sub", f"started at ${STARTING_BANKROLL:.2f} -- {pct:+.1f}%")
     src = replace_id_text(src, "open-count", str(len(trades) - resolved))
