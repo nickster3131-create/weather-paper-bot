@@ -142,22 +142,22 @@ def render_fills_content(rows):
         status_class = {"WIN": "pos", "LOSS": "neg", "PENDING": "flat"}[status]
         if status == "PENDING":
             if live_price is not None:
-                delta = live_price - t["fill_price"]
-                delta_class = "pos" if delta > 0 else ("neg" if delta < 0 else "flat")
-                now_cell = f'<td>{live_price:.3f}</td><td class="{delta_class}">{delta:+.3f}</td>'
+                delta_cents = (live_price - t["fill_price"]) * 100
+                delta_class = "pos" if delta_cents > 0 else ("neg" if delta_cents < 0 else "flat")
+                move_cell = f'<td class="{delta_class}">{delta_cents:+.0f}&cent;</td>'
             else:
-                now_cell = '<td>&mdash;</td><td>&mdash;</td>'
+                move_cell = '<td>&mdash;</td>'
         else:
-            # resolved -- "now" is the final settled price (0 or 1), delta vs fill is the realized move
+            # resolved -- realized move vs fill, to 0c or 100c
             final = 1.0 if status == "WIN" else 0.0
-            delta = final - t["fill_price"]
-            delta_class = "pos" if delta > 0 else ("neg" if delta < 0 else "flat")
-            now_cell = f'<td>{final:.3f}</td><td class="{delta_class}">{delta:+.3f}</td>'
+            delta_cents = (final - t["fill_price"]) * 100
+            delta_class = "pos" if delta_cents > 0 else ("neg" if delta_cents < 0 else "flat")
+            move_cell = f'<td class="{delta_class}">{delta_cents:+.0f}&cent;</td>'
         trs.append(
             "        <tr>"
             f"<td>{ts}</td><td>{html.escape(t['city'])}</td><td>{html.escape(bracket_label(t))}</td>"
-            f"<td>{html.escape(t['outcome'])}</td><td>{t['fill_price']:.3f}</td>"
-            f"{now_cell}"
+            f"<td>{html.escape(t['outcome'])}</td><td>{t['fill_price']*100:.0f}&cent;</td>"
+            f"{move_cell}"
             f"<td>${t['size_usd']:.2f}</td><td class=\"{status_class}\">{status}</td></tr>"
         )
     table_rows = "\n".join(trs)
@@ -167,7 +167,7 @@ def render_fills_content(rows):
         "      <thead>\n"
         "        <tr>\n"
         "          <th>Time</th><th>City</th><th>Bracket</th><th>Side</th>\n"
-        "          <th>Fill</th><th>Now</th><th>Since fill</th><th>Size</th><th>Status</th>\n"
+        "          <th>Fill</th><th>Move</th><th>Size</th><th>Status</th>\n"
         "        </tr>\n"
         "      </thead>\n"
         f'      <tbody id="fills-tbody">\n{table_rows}\n      </tbody>\n'
