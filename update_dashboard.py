@@ -42,8 +42,11 @@ def load_bankroll():
 
 
 def get_live_price(condition_id, outcome):
-    """Current best bid for a still-open position -- what you'd get selling
-    right now. None if the market/outcome can't be found or has no bids."""
+    """Current mark for a still-open position. Prefers the live order-book
+    best bid (what you'd actually get selling right now); when a position
+    has cratered toward worthless, nobody bids and the book is empty, so
+    falls back to Gamma's last-traded outcomePrices instead of silently
+    hiding a real loss as "no data"."""
     try:
         markets = http_get(f"{GAMMA}/markets", {"condition_ids": condition_id})
         if not markets:
@@ -55,9 +58,12 @@ def get_live_price(condition_id, outcome):
         token = tokens[idx]
         book = http_get(f"{CLOB}/book", {"token_id": token})
         bids = book.get("bids", [])
-        if not bids:
-            return None
-        return max(float(b["price"]) for b in bids)
+        if bids:
+            return max(float(b["price"]) for b in bids)
+        prices = json.loads(m.get("outcomePrices", "[]"))
+        if prices:
+            return float(prices[idx])
+        return None
     except Exception:
         return None
 
