@@ -42,11 +42,17 @@ def load_bankroll():
 
 
 def score_trades(trades):
-    """Best-effort resolution lookup per trade. Returns (rows, resolved, wins, losses, pending_usd, realized_pnl)."""
+    """Best-effort resolution lookup per trade. Returns
+    (rows, resolved, wins, losses, pending_usd, realized_pnl, resolved_stake_usd).
+    resolved_stake_usd is the original capital in resolved positions -- it must
+    be added back to total_value along with realized_pnl, since a resolved
+    trade's stake isn't sitting in pending_usd (open only) or cash (never
+    auto-credited back by paper_fill on resolution)."""
     rows = []
     resolved = wins = losses = 0
     pending_usd = 0.0
     realized_pnl = 0.0
+    resolved_stake_usd = 0.0
     for t in trades:
         status = "PENDING"
         try:
@@ -57,6 +63,7 @@ def score_trades(trades):
             final_price = float(res.get(t["outcome"], 0))
             pnl = (final_price - t["fill_price"]) * t["shares"]
             realized_pnl += pnl
+            resolved_stake_usd += t["size_usd"]
             resolved += 1
             if final_price > 0.5:
                 wins += 1
@@ -67,7 +74,7 @@ def score_trades(trades):
         else:
             pending_usd += t["size_usd"]
         rows.append((t, status))
-    return rows, resolved, wins, losses, pending_usd, realized_pnl
+    return rows, resolved, wins, losses, pending_usd, realized_pnl, resolved_stake_usd
 
 
 BRACKET_RE = re.compile(r"^highest-temperature-in-.+?-on-[a-z]+-\d{1,2}-\d{4}-(.+)$", re.IGNORECASE)
@@ -157,9 +164,13 @@ def replace_marker_block(html_src, marker, new_inner):
 def main():
     trades = load_trades()
     bankroll = load_bankroll()
-    rows, resolved, wins, losses, pending_usd, realized_pnl = score_trades(trades)
+    rows, resolved, wins, losses, pending_usd, realized_pnl, resolved_stake_usd = score_trades(trades)
 
-    total_value = bankroll["cash"] + pending_usd + realized_pnl
+    # cash already had every trade's stake debited at fill time (win or lose),
+    # and paper_fill never credits winnings back to cash on resolution -- so
+    # a resolved trade's original stake must be added back here, or it just
+    # vanishes from total_value (counted in neither cash nor pending_usd).
+    total_value = bankroll["cash"] + pending_usd + resolved_stake_usd + realized_pnl
     pct = (total_value / STARTING_BANKROLL - 1) * 100
 
     with open(DASHBOARD_FILE) as f:
